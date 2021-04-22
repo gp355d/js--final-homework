@@ -1,8 +1,8 @@
-let menuOpenBtn = document.querySelector('.menuToggle');
-let linkBtn = document.querySelectorAll('.topBar-menu a');
-let menu = document.querySelector('.topBar-menu');
-let orderList = document.querySelector('.order');
-let orderdeleteBtn = document.querySelector('.discardAllBtn');
+const menuOpenBtn = document.querySelector('.menuToggle');
+const linkBtn = document.querySelectorAll('.topBar-menu a');
+const menu = document.querySelector('.topBar-menu');
+const orderList = document.querySelector('.order');
+const orderdeleteBtn = document.querySelector('.discardAllBtn');
 let orderData = [];
 menuOpenBtn.addEventListener('click', menuToggle);
 
@@ -143,12 +143,13 @@ function getOrderList(){
     .then(function (response) {
       // console.log(response.data);
       orderData = response.data.orders;
-      renderOrderList();
+      renderOrderList(orderData);
       showC3chart();
       showC3chart_lv2();
     })
 }
-function renderOrderList(){
+function renderOrderList(orderData){
+  console.log(orderData);
   let str ="";
   if(orderData.length==0){
     str +=`<tr>
@@ -210,14 +211,22 @@ function deleteOrder(id){
   axios.delete(`${adminUrl}/${api_path}/orders/${id}`,headers)
   .then(function(response){
     alert("該筆訂單已成功刪除");
-    getOrderList();
+    // getOrderList();
+    orderData = response.data.orders;
+    renderOrderList(orderData)
+    showC3chart();
+    showC3chart_lv2();
   })
 }
 function deleteAllOrder(){
   axios.delete(`${adminUrl}/${api_path}/orders`,headers)
   .then(function (response) {
     alert("全部訂單皆成功刪除");
-    getOrderList();
+    // getOrderList();
+    orderData = response.data.orders;
+    renderOrderList(orderData)
+    showC3chart();
+    showC3chart_lv2();
   })
   .catch(function (error) {
     alert("目前已無剩餘訂單可刪除");
@@ -234,14 +243,16 @@ function changeOrder(status,id){
   }
   axios.put(`${adminUrl}/${api_path}/orders`,
   {
-    "data": {
-      "id": id,
-      "paid": newStatus
+    data: {
+      id: id,
+      paid: newStatus
     }
   },headers)
   .then(function (response) {
     alert("修改訂單狀態成功");
-    getOrderList();
+    // getOrderList();
+    orderData = response.data.orders;
+    renderOrderList(orderData)
   })
 }
 orderList.addEventListener('click', function(e){

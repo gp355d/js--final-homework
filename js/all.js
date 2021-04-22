@@ -119,10 +119,20 @@ function renderCartList(cartData,totalPrice){
             </div>
           </td>
           <td>NT$${toThousands(item.product.price)}</td>
-          <td>${item.quantity}</td>
+          <td>
+            <button class="numedit re">
+              <span class="material-icons cartAmount-icon" data-num="${item.quantity - 1}" data-id="${item.id}">remove
+              </span>
+            </button>
+            <span>${item.quantity}</span>
+            <button class="numedit">
+              <span class="material-icons cartAmount-icon" data-num="${item.quantity + 1}" data-id="${item.id}">add
+              </span>
+            </button>
+          </td>
           <td>NT$${toThousands(item.quantity*item.product.price)}</td>
           <td class="discardBtn">
-            <a href="#" class="material-icons" data-id="${item.id}">
+            <a href="#" class="material-icons delSingleBtn" data-id="${item.id}">
               clear
             </a>
           </td>
@@ -131,8 +141,34 @@ function renderCartList(cartData,totalPrice){
     })
     cartList.innerHTML = str;
     total.textContent = toThousands(totalPrice);
-    // console.log(str);
+}
+function editCartNum(num, id) {
+  // console.log(num);
+  if (num > 0) {
+    let data = {
+      data: {
+        id: id,
+        quantity: num
+      }
+    }
+    axios.patch(`${url}/${api_path}/carts`, data)
+      .then(function (response) {
+        // console.log(response);
+        cartData = response.data.carts;
+        totalPrice = response.data.finalTotal;
+        renderCartList(cartData,totalPrice);
+
+      })
+      .catch(function (error) {
+        console.log(error);
+      })
+  }
+  else {
+    alert("數量不能小於1")
+    return;
+    // deleteCart(id);
     
+  }
 }
 //取得購物車列表
 function getCartList(){
@@ -160,14 +196,20 @@ function addCart(id,num=1){
   }).
     then(function (response) {
       alert("該商品已成功加入購物車");
-      getCartList();
+      // getCartList();
+      cartData = response.data.carts;
+      totalPrice = response.data.finalTotal;
+      renderCartList(cartData,totalPrice);
   })
 }
 //刪除購物車特定產品
 function deleteCart(id){
   axios.delete(`${url}/${api_path}/carts/${id}`)
   .then(function (response) {
-    getCartList()
+    // getCartList()
+    cartData = response.data.carts;
+    totalPrice = response.data.finalTotal;
+    renderCartList(cartData,totalPrice);
     alert("成功刪除該商品！");
   })
 }
@@ -177,7 +219,10 @@ function deleteAllCart(e){
   axios.delete(`${url}/${api_path}/carts`)
   .then(function (response) {
       alert("購物車內全部商品刪除成功！");
-      getCartList();
+      // getCartList();
+      cartData = response.data.carts;
+      totalPrice = response.data.finalTotal;
+      renderCartList(cartData,totalPrice);
   })
   .catch(function (response) {
     alert("購物車全部商品已清空，請勿重複點擊！")
@@ -185,6 +230,10 @@ function deleteAllCart(e){
 }
 // 送出訂單
 function addOrder() {
+  if(cartData.length==0){
+    alert("購物車目前無選購產品");
+    return;
+  }
   let customerName = document.querySelector('#customerName').value.trim();
   let customerPhone = document.querySelector('#customerPhone').value.trim();
   let customerEmail = document.querySelector('#customerEmail').value.trim();
@@ -311,7 +360,16 @@ function searchFilter(e){
 cartList.addEventListener('click',function(e){
   e.preventDefault();
   let cartId = e.target.getAttribute('data-id');
+  let className = e.target.getAttribute('class');
+  // console.log(className);
   if(cartId == null){
+    return;
+  }
+  else if(className == "material-icons cartAmount-icon"){
+    let productId = e.target.dataset.id;
+    let num = parseInt(e.target.dataset.num);
+    // console.log(ptId,num);
+    editCartNum(num,productId)
     return;
   }
   deleteCart(cartId);

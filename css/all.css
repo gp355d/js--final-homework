@@ -582,7 +582,9 @@ html, body {
     margin-right: 15px;
     max-width: 80px;
   }
-  
+  .numedit{
+    text-decoration: none;
+  }
   .discardBtn {
     text-align: right;
   }
